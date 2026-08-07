@@ -33,7 +33,7 @@ steps:
       - --allow-unauthenticated
       - --service-account
       - ${_SERVICE_ACCOUNT}
-      - --min-instances=1
+      - --min-instances=0
       - --max-instances=1
       - --port
       - "8080"

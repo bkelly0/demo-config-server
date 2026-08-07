@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: git@github.com:bkelly0/demo-config-properties.git
+          ignore-local-ssh-settings: true
+          default-label: main
+          private-key: "${GITHUB_PRIVATE_KEY:}"
+
+gcp:
+  project-id: ${PROJECT_ID:}
+
+logging:
+  structured:
+    format:
+      console: logstash
+  level:
+    root: INFO
+
+server:
+  port: 8080

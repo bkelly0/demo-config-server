@@ -1,0 +1,56 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build image
+    args:
+      - build
+      - -f
+      - Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push image
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    id: Deploy to Cloud Run
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA
+      - --region
+      - ${_REGION}
+      - --platform
+      - managed
+      - --ingress
+      - internal
+      - --allow-unauthenticated
+      - --service-account
+      - ${_SERVICE_ACCOUNT}
+      - --min-instances=1
+      - --max-instances=1
+      - --port
+      - "8080"
+      - --set-secrets
+      - "GITHUB_PRIVATE_KEY=demo-config-server-github-private-key:latest"
+      - --set-env-vars
+      - "PROJECT_ID=$PROJECT_ID"
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _REGION: us-central1
+  _AR_REPO: app-images
+  _IMAGE_NAME: demo-config-server
+  _SERVICE_NAME: demo-config-server
+  _SERVICE_ACCOUNT: demo-config-server-sa@bkelly-portfolio.iam.gserviceaccount.com
